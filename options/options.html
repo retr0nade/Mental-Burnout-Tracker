@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Burnout Tracker Settings</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="settings-container">
+    <h1>Burnout Prevention Settings</h1>
+    
+    <div class="setting-group">
+      <label>
+        <input type="checkbox" id="enableInterventions"> 
+        Enable Smart Interventions
+      </label>
+    </div>
+
+    <div class="setting-group">
+      <h3>Notification Sensitivity</h3>
+      <select id="sensitivityLevel">
+        <option value="gentle">Gentle (Fewer alerts)</option>
+        <option value="balanced" selected>Balanced</option>
+        <option value="aggressive">Aggressive (Early warnings)</option>
+      </select>
+    </div>
+
+    <div class="setting-group">
+      <h3>Preferred Break Activities</h3>
+      <label><input type="checkbox" name="breakActivity" value="meditation" checked> Meditation</label>
+      <label><input type="checkbox" name="breakActivity" value="nature"> Nature Sounds</label>
+      <label><input type="checkbox" name="breakActivity" value="stretching"> Stretching</label>
+    </div>
+
+    <button id="saveSettings">Save Preferences</button>
+  </div>
+
+  <script src="options.js"></script>
+</body>
+</html>

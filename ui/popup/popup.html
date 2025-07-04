@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Burnout Tracker</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .status-indicator {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background-color: #cbd5e0; /* default (gray) */
+      display: inline-block;
+      margin-left: 10px;
+    }
+    .status-indicator.warning {
+      background-color: #f6ad55; /* orange */
+    }
+    .status-indicator.danger {
+      background-color: #f56565; /* red */
+    }
+  </style>
+  <style>
+    /* Loading indicator styles */
+    .loading-indicator {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.95);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      transition: opacity 0.3s ease;
+    }
+    
+    .loading-indicator.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .spinner {
+      border: 4px solid rgba(102, 126, 234, 0.2);
+      border-radius: 50%;
+      border-top: 4px solid #667eea;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin-bottom: 16px;
+    }
+
+    .loading-text {
+      color: #4a5568;
+      font-size: 16px;
+      margin-bottom: 24px;
+    }
+
+    .retry-btn {
+      background: #667eea;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Error state */
+    .error-state {
+      text-align: center;
+      padding: 20px;
+      color: #e53e3e;
+    }
+  </style>
+</head>
+<body>
+  <!-- Loading Indicator (now properly structured) -->
+  <div id="loadingIndicator" class="loading-indicator">
+    <div class="spinner"></div>
+    <p class="loading-text">Calculating your mental load...</p>
+    <button id="retryBtn" class="retry-btn" style="display: none;">Retry</button>
+  </div>
+
+  <!-- Main Dashboard Content -->
+  <div class="dashboard" id="dashboardContent" style="display: none;">
+    <!-- Current Status Card -->
+    <div class="card status-card">
+      <div class="header">
+        <h2>Current Mental Load</h2>
+        <div class="status-indicator" id="statusIndicator"></div>
+      </div>
+      <div class="gauge-container">
+        <canvas id="burnoutGauge"></canvas>
+        <div class="gauge-label" id="gaugeLabel">--</div>
+      </div>
+      <div class="suggestions" id="suggestions"></div>
+    </div>
+
+    <!-- Activity Breakdown -->
+    <div class="card activity-card">
+      <h2>Activity Patterns</h2>
+      <div class="metrics-grid">
+        <div class="metric">
+          <span class="metric-value" id="tabVelocity">--</span>
+          <span class="metric-label">Tabs/hour</span>
+        </div>
+        <div class="metric">
+          <span class="metric-value" id="attentionSpan">--</span>
+          <span class="metric-label">Avg Focus</span>
+        </div>
+        <div class="metric">
+          <span class="metric-value" id="switches">--</span>
+          <span class="metric-label">Switches</span>
+        </div>
+        <div class="metric">
+          <span class="metric-value" id="youtubeTime">--</span>
+          <span class="metric-label">YouTube</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Trend Visualization -->
+    <div class="card trend-card">
+      <h2>Weekly Trend</h2>
+      <canvas id="trendChart"></canvas>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+      <button id="meditateBtn" class="action-btn">
+        <span>🧘‍♂️ 5-min Meditation</span>
+      </button>
+      <button id="breakBtn" class="action-btn">
+        <span>🌱 Take a Break</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Error State (hidden by default) -->
+  <div id="errorState" class="error-state" style="display: none;">
+    <h2>⚠️ Unable to Load Data</h2>
+    <p id="errorMessage"></p>
+    <button id="reloadBtn" class="action-btn">Reload Extension</button>
+  </div>
+
+  <script src="../../lib/chart.umd.min.js"></script>
+  <script type="module" src="dashboard.js"></script>
+</body>
+</html>

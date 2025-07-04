@@ -1,0 +1,63 @@
+{
+  "manifest_version": 3,
+  "name": "Mental Burnout Tracker",
+  "version": "1.0.0",
+  "description": "Detects burnout patterns in browsing behavior and suggests interventions",
+  
+  "icons": {
+    "48": "ui/assets/icons/icon48.png"
+  },
+
+  "background": {
+    "service_worker": "background/worker.js",
+    "type": "module"
+  },
+
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content/main.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["*://*.youtube.com/*"],
+      "js": ["content/youtube-detector.js"],
+      "run_at": "document_end"
+    }
+  ],
+
+  "action": {
+    "default_popup": "ui/popup/popup.html",
+    "default_icon": {
+      "48": "ui/assets/icons/icon48.png"
+    }
+  },
+
+  "options_ui": {
+    "page": "options/options.html",
+    "open_in_tab": false
+  },
+
+  "permissions": [
+    "tabs",
+    "activeTab",
+    "storage",
+    "alarms",
+    "notifications",
+    "scripting"
+  ],
+
+  "host_permissions": [
+    "*://*.youtube.com/*"
+  ],
+
+  "web_accessible_resources": [{
+    "resources": [
+      "ui/notification.html",
+      "ui/assets/*",
+      "lib/chart.min.js"
+    ],
+    "matches": ["<all_urls>"]
+  }]
+
+}
