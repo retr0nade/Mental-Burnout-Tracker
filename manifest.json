@@ -15,8 +15,8 @@
 
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
-      "js": ["content/main.js"],
+      "matches": ["*://*.youtube.com/*"],
+      "js": ["content/youtube-detector.js"],
       "run_at": "document_idle"
     },
     {

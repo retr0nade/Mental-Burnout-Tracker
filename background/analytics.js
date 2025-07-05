@@ -117,7 +117,7 @@ export default class AnalyticsEngine {
       tabVelocity: this._calculateHourlyTabRate(),
       avgAttentionSpan: this._calculateAverageAttentionSpan(),
       tabSwitches: this._getRecentSwitches(30),
-      youtubeTime: Math.round(this.metrics.youtube.timeSpent),
+      youtubeTime: Math.round(this.metrics.youtube.timeSpent / 60),
       lastUpdated: new Date().toISOString()
     };
   }

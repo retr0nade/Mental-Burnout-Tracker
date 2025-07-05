@@ -1,98 +1,100 @@
 // content/youtube-detector.js
+if (window.__youtubeBingeDetectorInjected__) {
+  console.log('[YouTubeDetector] Already injected, skipping.');
+} else {
+  window.__youtubeBingeDetectorInjected__ = true;
 
-class YouTubeBingeDetector {
-  constructor() {
-    this.port = null;
-    this.videoElement = null;
-    this.videoId = null;
-    this.watchTime = 0;
-    this.startTime = null;
-    this.trackInterval = null;
-    this.reportInterval = null;
+  class YouTubeBingeDetector {
+    constructor() {
+      this.videoId = null;
+      this.watchedVideos = new Set();
+      this.sessionStart = Date.now();
+      this.videoStartTime = null;
+      this.sendTimer = null;
 
-    this.init();
-  }
+      this.init();
+    }
 
-  async init() {
-    if (!this.isYouTubeWatchPage()) return;
+    init() {
+      this.observePageChanges();
+      this.startUsageTimer();
+    }
 
-    await this.waitForVideo();
+    observePageChanges() {
+      const observer = new MutationObserver(() => {
+        const newVideoId = this.getCurrentVideoId();
+        if (newVideoId && newVideoId !== this.videoId) {
+          this.handleVideoSwitch(newVideoId);
+        }
+      });
 
-    this.port = chrome.runtime.connect({ name: 'youtube_port' });
-    this.videoElement = document.querySelector('video');
-    this.videoId = this.getCurrentVideoId();
-    this.startTime = Date.now();
+      observer.observe(document.body, {
+        childList: true,
+        subtree: true
+      });
 
-    this.setupPageObserver();
-    this.startTracking();
-    this.startReporting();
-  }
+      // Initial check
+      const current = this.getCurrentVideoId();
+      if (current) this.handleVideoSwitch(current);
+    }
 
-  isYouTubeWatchPage() {
-    return (
-      window.location.hostname.includes('youtube.com') &&
-      window.location.pathname === '/watch'
-    );
-  }
+    getCurrentVideoId() {
+      return new URLSearchParams(window.location.search).get('v');
+    }
 
-  getCurrentVideoId() {
-    return new URLSearchParams(window.location.search).get('v');
-  }
+    handleVideoSwitch(newVideoId) {
+      this.sendUsage(); // send data for previous video
+      this.videoId = newVideoId;
+      this.videoStartTime = Date.now();
+      this.watchedVideos.add(newVideoId);
+    }
 
-  async waitForVideo() {
-    while (!document.querySelector('video')) {
-      await new Promise((res) => setTimeout(res, 300));
+    startUsageTimer() {
+      this.sendTimer = setInterval(() => {
+        this.sendUsage();
+      }, 30000);
+    }
+
+    sendUsage() {
+      if (!this.videoId || !this.videoStartTime) return;
+
+      const now = Date.now();
+      const timeSpent = Math.floor((now - this.videoStartTime) / 1000); // seconds
+
+      chrome.storage.local.get('trackingEnabled', (result) => {
+        if (result.trackingEnabled === false) {
+          console.log('[YouTubeDetector] Tracking disabled. Skipping usage send.');
+          return;
+        }
+
+        const message = {
+          type: 'youtube_activity',
+          data: {
+            videoId: this.videoId,
+            isBinge: this.watchedVideos.size > 3,
+            timeSpent,
+            sessionDuration: Math.floor((now - this.sessionStart) / 60000)
+          }
+        };
+
+        try {
+          chrome.runtime.sendMessage(message);
+          console.log('[YouTubeDetector] Sent activity:', message);
+        } catch (err) {
+          console.warn('[YouTubeDetector] Cannot send message: context invalidated', err);
+        }
+
+        this.videoStartTime = now;
+      });
     }
   }
 
-  setupPageObserver() {
-    let lastUrl = location.href;
-    const observer = new MutationObserver(() => {
-      if (location.href !== lastUrl) {
-        lastUrl = location.href;
-        this.onVideoChange();
-      }
+  if (
+    window.location.hostname.includes('youtube.com') &&
+    window.location.pathname === '/watch'
+  ) {
+    window.addEventListener('load', () => {
+      new YouTubeBingeDetector();
     });
-
-    observer.observe(document.body, { childList: true, subtree: true });
-  }
-
-  onVideoChange() {
-    this.sendUsage(); // flush previous
-    this.watchTime = 0;
-    this.videoId = this.getCurrentVideoId();
-    this.startTime = Date.now();
-  }
-
-  startTracking() {
-    this.trackInterval = setInterval(() => {
-      if (this.videoElement && !this.videoElement.paused && !this.videoElement.ended) {
-        this.watchTime += 1; // add 1 second
-      }
-    }, 1000);
-  }
-
-  startReporting() {
-    this.reportInterval = setInterval(() => {
-      this.sendUsage();
-    }, 30000); // every 30 seconds
-  }
-
-  sendUsage() {
-    if (!this.port || !this.videoId || this.watchTime === 0) return;
-
-    this.port.postMessage({
-      type: 'youtube_activity',
-      data: {
-        videoId: this.videoId,
-        timeSpent: Math.floor(this.watchTime / 60), // minutes
-        isBinge: false,
-        sessionDuration: (Date.now() - this.startTime) / 60000
-      }
-    });
-
-    this.watchTime = 0;
   }
 }
-
-new YouTubeBingeDetector();

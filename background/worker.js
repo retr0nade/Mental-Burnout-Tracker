@@ -5,7 +5,7 @@ import InterventionManager from './intervention-manager.js';
 class Worker {
   constructor() {
     this.state = new StateManager();
-    this.analytics = new AnalyticsEngine(this.state); // inject state
+    this.analytics = new AnalyticsEngine(this.state);
     this.interventions = new InterventionManager();
 
     this.popupOpen = false;
@@ -24,12 +24,14 @@ class Worker {
   setupListeners() {
     const debouncedCheck = this.debounce(this.checkBurnoutThresholds.bind(this), 1000);
 
-    chrome.tabs.onCreated.addListener(tab => {
+    chrome.tabs.onCreated.addListener(async tab => {
+      if (!(await this.isTrackingEnabled())) return;
       this.analytics.recordTabCreation(tab);
       debouncedCheck();
     });
 
-    chrome.tabs.onActivated.addListener(info => {
+    chrome.tabs.onActivated.addListener(async info => {
+      if (!(await this.isTrackingEnabled())) return;
       this.analytics.recordTabSwitch(info);
       debouncedCheck();
     });
@@ -38,7 +40,7 @@ class Worker {
       this.handleMessage(request)
         .then(response => sendResponse(response))
         .catch(error => sendResponse({ error: error.message }));
-      return true; // async
+      return true;
     });
 
     chrome.runtime.onConnect.addListener((port) => {
@@ -60,6 +62,7 @@ class Worker {
         console.log('[worker] YouTube content script connected');
         port.onMessage.addListener(async (msg) => {
           if (msg.type === 'youtube_activity') {
+            if (!(await this.isTrackingEnabled())) return;
             console.log('[worker] YouTube activity:', msg.data);
             this.analytics.processYoutubeActivity(msg.data);
             await this.checkBurnoutThresholds();
@@ -71,6 +74,11 @@ class Worker {
         });
       }
     });
+  }
+
+  async isTrackingEnabled() {
+    const { trackingEnabled } = await chrome.storage.local.get('trackingEnabled');
+    return trackingEnabled !== false; // default to true
   }
 
   debounce(func, delay) {
@@ -89,7 +97,8 @@ class Worker {
       case 'refresh_data':
         return await this.checkBurnoutThresholds();
 
-      case 'youtube_activity': // fallback if some old content script calls it
+      case 'youtube_activity': // fallback for older scripts
+        if (!(await this.isTrackingEnabled())) return { status: 'ignored' };
         console.log('[worker] Received YouTube activity (fallback):', request.data);
         this.analytics.processYoutubeActivity(request.data);
         await this.checkBurnoutThresholds();
@@ -133,7 +142,7 @@ class Worker {
     const latest = sorted.slice(-12); // last 12 time points
 
     for (const [hour, { score }] of latest) {
-      const label = hour.split('T')[1]; // HH
+      const label = hour.split('T')[1];
       labels.push(`${label}:00`);
       values.push(parseFloat(score));
     }
@@ -142,6 +151,11 @@ class Worker {
   }
 
   async checkBurnoutThresholds() {
+    if (!(await this.isTrackingEnabled())) {
+      console.log('[worker] Skipping burnout check - tracking is disabled.');
+      return { success: false, error: 'Tracking disabled' };
+    }
+
     try {
       const score = await this.analytics.calculateBurnoutScore();
       const metrics = this.analytics.getCurrentMetrics();

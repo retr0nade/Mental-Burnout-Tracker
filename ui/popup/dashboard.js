@@ -15,6 +15,7 @@ export default class Dashboard {
     this.setupConnection();
     this.loadInitialData();
     this.setInitialState();
+    this.loadTrackingPreference();
   }
 
   setInitialState() {
@@ -41,7 +42,6 @@ export default class Dashboard {
       switches: document.getElementById('switches'),
       youtubeTime: document.getElementById('youtubeTime'),
       suggestions: document.getElementById('suggestions'),
-      
 
       // States
       loadingIndicator: document.getElementById('loadingIndicator'),
@@ -53,7 +53,10 @@ export default class Dashboard {
       retryBtn: document.getElementById('retryBtn'),
       reloadBtn: document.getElementById('reloadBtn'),
       meditateBtn: document.getElementById('meditateBtn'),
-      breakBtn: document.getElementById('breakBtn')
+      breakBtn: document.getElementById('breakBtn'),
+
+      // Toggle
+      trackingToggle: document.getElementById('trackingToggle')
     };
   }
 
@@ -68,6 +71,27 @@ export default class Dashboard {
     this.elements.breakBtn.addEventListener('click', () => {
       chrome.runtime.sendMessage({ type: 'start_break', duration: 5 });
     });
+
+    this.elements.trackingToggle?.addEventListener('change', async (e) => {
+      const enabled = e.target.checked;
+      await chrome.storage.local.set({ trackingEnabled: enabled });
+      console.log('[dashboard] Tracking is now', enabled ? 'ON' : 'OFF');
+
+      const label = document.getElementById('trackingStatusLabel');
+      if (label) label.textContent = `Tracking: ${enabled ? 'ON' : 'OFF'}`;
+    });
+  }
+
+  async loadTrackingPreference() {
+    const { trackingEnabled } = await chrome.storage.local.get('trackingEnabled');
+    const enabled = trackingEnabled !== false;
+    
+    if (this.elements.trackingToggle) {
+      this.elements.trackingToggle.checked = enabled;
+    }
+
+    const label = document.getElementById('trackingStatusLabel');
+    if (label) label.textContent = `Tracking: ${enabled ? 'ON' : 'OFF'}`;
   }
 
   setupConnection() {
@@ -90,7 +114,7 @@ export default class Dashboard {
     if (!this.initialized) {
       this.showError('Extension not responding');
     } else {
-      this.startPolling(); // fallback if connection lost
+      this.startPolling();
     }
   }
 
@@ -166,20 +190,16 @@ export default class Dashboard {
     try {
       const score = data.currentScore ?? 0;
 
-      // Gauge
       this.gaugeInstance.data.datasets[0].data = [score, 10 - score];
       this.gaugeInstance.update();
       if (this.elements.gaugeLabel)
         this.elements.gaugeLabel.textContent = `${score}/10`;
 
-
-      // Status circle
       const statusClass =
         score > 7.5 ? 'danger' :
         score > 5 ? 'warning' : '';
       this.elements.statusIndicator.className = `status-indicator ${statusClass}`;
 
-      // Metrics
       const metrics = data.metrics ?? {};
       this.elements.tabVelocity.textContent = metrics.tabVelocity ?? '--';
       this.elements.attentionSpan.textContent = metrics.avgAttentionSpan ? `${Math.floor(metrics.avgAttentionSpan)}m` : '--';
@@ -187,10 +207,8 @@ export default class Dashboard {
       this.elements.youtubeTime.textContent = metrics.youtubeTime ? `${Math.floor(metrics.youtubeTime)}m` : '--';
       this.elements.gaugeLabel.textContent = `${score}/10`;
 
-      // Suggestions
       this.elements.suggestions.innerHTML = this.getSuggestions(score);
 
-      // Trend
       if (data.weeklyTrend) this.updateTrendChart(data.weeklyTrend);
     } catch (error) {
       console.error('[dashboard] updateDashboard() failed:', error);
@@ -283,6 +301,5 @@ export default class Dashboard {
   }
 }
 
-// Fire it up
 const dashboard = new Dashboard();
 window.addEventListener('unload', () => dashboard.cleanup());

@@ -9,6 +9,7 @@ This is a browser extension that tracks your browsing behavior to infer potentia
 - 🖱️ **Erratic Click Behavior**: Analyzes erratic mouse clicks and scroll behavior.
 - 📊 **Mental Load Score**: Computes a score (0–10) indicating your current mental load.
 - 🧘 **Wellness Prompts**: Suggests breaks or short meditations based on your load.
+- 🔘 **Tracking Toggle**: You can now turn tracking on/off directly from the popup.
 
 ## 🧪 Current Status
 
@@ -85,9 +86,10 @@ Got an idea or want to fix a bug? PRs are welcome! Please fork the repo and open
 
 ## 🙋‍♂️ Author
 
-**Shreyas Deb**
-Built for self-care, awareness, and CS innovation.
+**Shreyas Deb**  
+Built for self-care, awareness, and CS innovation.  
 Share feedback and ideas to improve this extension!
+
 ---
 
 ## 📄 License
