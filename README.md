@@ -49,6 +49,7 @@ mental-burnout-tracker/
 │   ├── notification.js
 │   └── assets/
 │       └── icons/
+│       │   ├── icon.png
 ├── lib/
 │   └── chart.umd.min.js
 ├── utils/
