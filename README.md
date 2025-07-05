@@ -17,7 +17,6 @@ This is an active WIP (work in progress). Core tracking is working, but a few is
 
 ### ⚠️ Known Bugs / To-Dos
 
-- [ ] **YouTube Time Not Updating** — Needs better video-time tracking.
 - [ ] **Avg Focus Time is Hardcoded** — Dynamic calculation pending.
 - [ ] **Mental Load Graph Not Updating** — Needs backend state persistence fix.
 - [ ] **Extension Stats Reset Randomly** — State isn't persisting consistently.
