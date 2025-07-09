@@ -14,6 +14,7 @@ This is a browser extension that tracks your browsing behavior to infer potentia
 ## 🧪 Current Status
 
 This is an active WIP (work in progress). Core tracking is working, but a few issues persist.
+Project will be AI integrated soon.
 
 ### ⚠️ Known Bugs / To-Dos
 
