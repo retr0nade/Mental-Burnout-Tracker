@@ -43,6 +43,14 @@ class Worker {
       return true;
     });
 
+    chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+      if (msg.type === "getDashboardData") {
+        // Gather and send dashboard stats
+        sendResponse({ /* your stats */ });
+      }
+    });
+
+
     chrome.runtime.onConnect.addListener((port) => {
       if (port.name === 'popup') {
         console.log('[worker] Popup connected');

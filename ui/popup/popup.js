@@ -1,52 +1,12 @@
 import { getAIInsight } from '../../utils/ai-api.js';
-
-const aiSection = document.getElementById('ai-insight-section');
-const aiButton = document.getElementById('get-ai-insight');
-const aiOutput = document.getElementById('ai-insight');
-
-aiButton.addEventListener('click', async () => {
-  aiOutput.textContent = "Thinking...";
-  // Build the activity summary (replace with real stats gathering logic)
-  const summary = await buildSummaryForToday(); // custom function
-  const advice = await getAIInsight(
-    summary,
-    "Provide actionable, non-judgmental burnout advice based on this usage pattern."
-  );
-  aiOutput.textContent = advice;
-});
-
-const journalInput = document.getElementById('journal-entry');
-const journalBtn = document.getElementById('analyze-journal');
-const journalFeedback = document.getElementById('journal-feedback');
-
-journalBtn.addEventListener('click', async () => {
-  journalFeedback.textContent = "Analyzing...";
-  const text = journalInput.value.trim();
-  if (!text) return;
-  const result = await getAIInsight(
-    text,
-    "summarize this as a journal coach: offer validation and a gentle suggestion."
-  );
-  journalFeedback.textContent = result;
-});
-
 const aiBtn = document.getElementById('get-ai-insight');
 const aiDiv = document.getElementById('ai-insight');
 
-if (aiBtn && aiDiv) {
-  aiBtn.addEventListener('click', async () => {
-    aiBtn.disabled = true;
-    aiDiv.textContent = "AI is thinking...";
-
-    // Example: Gather today's activity (replace with real stats or mock for now)
-    let summary = "Today I opened 18 tabs, switched between work and video sites frequently, and worked after hours.";
-    // If you have dynamic stats, build the summary string here.
-
-    const advice = await getAIInsight(
-      summary,
-      "Provide actionable, friendly burnout prevention or recovery advice."
-    );
-    aiDiv.textContent = advice;
-    aiBtn.disabled = false;
-  });
-}
+aiBtn.addEventListener('click', async () => {
+  aiBtn.disabled = true;
+  aiDiv.textContent = "Thinking...";
+  const summary = "Today: opened 18 tabs, switched focus often, and worked after midnight.";
+  const advice = await getAIInsight(summary, "Give actionable burnout advice.");
+  aiDiv.textContent = advice;
+  aiBtn.disabled = false;
+});
