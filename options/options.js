@@ -27,3 +27,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     alert('Preferences saved!');
   });
 });
+
+document.getElementById("ai-features-toggle").addEventListener("change", evt => {
+  const enabled = evt.target.checked;
+  chrome.storage.local.set({ aiFeaturesEnabled: enabled });
+});
