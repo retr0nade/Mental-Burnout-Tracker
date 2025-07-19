@@ -1,4 +1,3 @@
-// utils/ai-api.js
 const HF_API_URL = "https://retr0nade--Mental-Burnout-Tracker.hf.space/api/predict/";
 
 export async function getAIInsight(prompt, context = "") {

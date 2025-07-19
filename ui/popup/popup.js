@@ -30,3 +30,23 @@ journalBtn.addEventListener('click', async () => {
   journalFeedback.textContent = result;
 });
 
+const aiBtn = document.getElementById('get-ai-insight');
+const aiDiv = document.getElementById('ai-insight');
+
+if (aiBtn && aiDiv) {
+  aiBtn.addEventListener('click', async () => {
+    aiBtn.disabled = true;
+    aiDiv.textContent = "AI is thinking...";
+
+    // Example: Gather today's activity (replace with real stats or mock for now)
+    let summary = "Today I opened 18 tabs, switched between work and video sites frequently, and worked after hours.";
+    // If you have dynamic stats, build the summary string here.
+
+    const advice = await getAIInsight(
+      summary,
+      "Provide actionable, friendly burnout prevention or recovery advice."
+    );
+    aiDiv.textContent = advice;
+    aiBtn.disabled = false;
+  });
+}
