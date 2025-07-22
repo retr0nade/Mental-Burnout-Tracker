@@ -1,4 +1,4 @@
-# 🧠 Mental Burnout Tracker (Chrome/Edge Extension)
+# 🧠 Mental Burnout Tracker V1 (Chrome/Edge Extension)
 
 This is a browser extension that tracks your browsing behavior to infer potential signs of **mental fatigue or burnout**, then gives you nudges like meditation prompts or "touch grass" alerts.
 
